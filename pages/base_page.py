@@ -26,17 +26,20 @@ class BasePage:
             elem = self.browser.find_element(*locator)
             elem.click()
         except exceptions.ElementClickInterceptedException as ex:
-            raise AssertionError(f"Element: {locator} was not cliked due {ex}")
+            raise AssertionError(f"Element: {locator} was not clicked due {ex}")
 
     def click_all_elements_in_list(self, locator: tuple, wait=5):
-            try:
-                elems = self.browser.find_elements(*locator)
-                for elem in elems:
-                    self.actions.key_down(Keys.CONTROL).click(elem).key_up(Keys.CONTROL).perform()
-            except exceptions.TimeoutException:
-                raise AssertionError(f'Element: {locator} is not clickable.')
-            except exceptions.ElementClickInterceptedException as ex:
-                raise AssertionError(f"Element: {locator} was not cliked due {ex}")
+        """Click each element located by ``locator`` using CTRL+click."""
+        try:
+            elems = WebDriverWait(self.browser, wait).until(
+                EC.presence_of_all_elements_located(locator)
+            )
+            for elem in elems:
+                self.actions.key_down(Keys.CONTROL).click(elem).key_up(Keys.CONTROL).perform()
+        except exceptions.TimeoutException:
+            raise AssertionError(f'Elements: {locator} are not clickable.')
+        except exceptions.ElementClickInterceptedException as ex:
+            raise AssertionError(f"Elements: {locator} were not clicked due {ex}")
 
     def element_is_visible(self, locator: tuple, wait=5):
         try:
